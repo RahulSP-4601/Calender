@@ -204,16 +204,6 @@ export default function Home() {
                 Open Google Calendar
               </a>
             )}
-            {firstEventLink && (
-              <a
-                href={firstEventLink}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="inline-flex items-center rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm hover:bg-white/10"
-              >
-                Open a Synced Event
-              </a>
-            )}
           </div>
 
           <div className="flex gap-2">
