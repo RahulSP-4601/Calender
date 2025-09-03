@@ -65,21 +65,7 @@ function TaskModal({ task, onClose }: TaskModalProps) {
               <div className="text-sm uppercase tracking-wide text-zinc-400">Date</div>
               <div className="mt-1">{dateStr}</div>
             </div>
-            {task.classId && (
-              <div>
-                <div className="text-sm uppercase tracking-wide text-zinc-400">Class</div>
-                <div className="mt-1">{task.classId}</div>
-              </div>
-            )}
           </div>
-
-          {/* Optional fields: render if present so it works with your shape */}
-          {'type' in (task as any) && (task as any).type && (
-            <div>
-              <div className="text-sm uppercase tracking-wide text-zinc-400">Type</div>
-              <div className="mt-1">{(task as any).type}</div>
-            </div>
-          )}
 
           {'location' in (task as any) && (task as any).location && (
             <div>

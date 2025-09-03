@@ -54,9 +54,6 @@ export default function Uploader({
           <div className="text-sm text-white/80">
             <strong>Upload your syllabus PDF</strong> — drag & drop or choose a file.
           </div>
-          <div className="text-xs text-white/60">
-            Class: <span className="font-mono text-white/80">{classId}</span>
-          </div>
         </div>
 
         <label className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm hover:bg-white/20 cursor-pointer">

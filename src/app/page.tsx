@@ -4,16 +4,13 @@ import * as React from 'react';
 import CalendarView from '@/components/CalendarView';
 import ListView from '@/components/ListView';
 import Uploader from '@/components/Uploader';
-
 import type { SyllabusTask } from '@/lib/types';
 
-const CLASSES = [
-  { id: 'contracts', name: 'Contracts I' },
-  { id: 'torts', name: 'Torts' },
-];
+// Single, neutral class id used internally for tagging uploads
+const DEFAULT_CLASS_ID = 'general';
 
 export default function Home() {
-  const [activeClass, setActiveClass] = React.useState(CLASSES[0].id);
+  // we keep a class id only to pass to the Uploader; no tabs/UI
   const [tasks, setTasks] = React.useState<SyllabusTask[]>([]);
   const [mode, setMode] = React.useState<'calendar' | 'list'>('calendar');
   const [loading, setLoading] = React.useState(false);
@@ -21,12 +18,14 @@ export default function Home() {
 
   const onStart = () => { setLoading(true); setMessage('Parsing syllabus…'); setTasks([]); };
   const onError = (msg: string) => { setLoading(false); setMessage(msg || 'Failed to parse.'); };
+
   const onParsed = (incoming: SyllabusTask[]) => {
     setLoading(false);
-    // de-dupe by (classId|date|title)
+    // de-dupe by (classId|date|title) but fall back to DEFAULT_CLASS_ID if missing
     const seen = new Set<string>();
     const deduped = incoming.filter(t => {
-      const k = `${t.classId}|${t.date}|${t.title.toLowerCase()}`;
+      const cid = t.classId || DEFAULT_CLASS_ID;
+      const k = `${cid}|${t.date}|${(t.title || '').toLowerCase()}`;
       if (seen.has(k)) return false; seen.add(k); return true;
     });
     setTasks(deduped);
@@ -45,7 +44,7 @@ export default function Home() {
       const blob = await r.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = `lawbandit-${activeClass}.ics`; a.click();
+      a.href = url; a.download = `lawbandit-${DEFAULT_CLASS_ID}.ics`; a.click();
       URL.revokeObjectURL(url);
     } catch (e: any) { setMessage(e?.message || 'Failed to download ICS'); }
   }
@@ -61,7 +60,6 @@ export default function Home() {
             <span className="text-white/90">Syllabus → Calendar</span>
           </h1>
           <div className="flex items-center gap-2">
-            
             <button
               disabled={!tasks.length}
               onClick={downloadICS}
@@ -82,30 +80,10 @@ export default function Home() {
 
       {/* Content */}
       <section className="max-w-6xl mx-auto px-6 py-8 space-y-6">
-        {/* Class Tabs */}
-        <div className="flex flex-wrap gap-2">
-          {CLASSES.map(c => {
-            const active = activeClass === c.id;
-            return (
-              <button
-                key={c.id}
-                onClick={() => { setActiveClass(c.id); setTasks([]); setMessage(null); }}
-                className={`px-4 py-2 rounded-2xl border text-sm transition ${
-                  active
-                    ? 'border-brand-500/60 bg-brand-500/10 text-white'
-                    : 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
-                }`}
-              >
-                {c.name}
-              </button>
-            );
-          })}
-        </div>
-
         {/* Upload card */}
         <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
           <Uploader
-            classId={activeClass}
+            classId={DEFAULT_CLASS_ID}   // << neutral; no Contracts/Torts
             onStart={onStart}
             onParsed={onParsed}
             onError={onError}
