@@ -1,26 +1,67 @@
-import { createEvents } from 'ics';
-import type { SyllabusTask } from './types';
+// src/lib/icsExport.ts
+import { createEvents, type EventAttributes } from 'ics';
 
-export function tasksToICSBuffer(tasks: SyllabusTask[]): Promise<Buffer> {
-  const events = tasks.map(t => {
-    const [y, m, d] = t.date.split('-').map(Number);
-    const start = t.time ? [y, m, d, ...t.time.split(':').map(Number)] : [y, m, d];
-    const end = t.endTime ? [y, m, d, ...t.endTime.split(':').map(Number)] : undefined;
+export type SimpleTask = {
+  title: string;
+  date: string;              // YYYY-MM-DD
+  time?: string | null;      // HH:MM (24h) optional
+  description?: string;
+  location?: string;
+  link?: string;
+};
 
-    return {
+function addHour(y: number, m: number, d: number, hh: number, mm: number) {
+  const dt = new Date(y, m - 1, d, hh, mm, 0, 0);
+  dt.setHours(dt.getHours() + 1);
+  return [dt.getFullYear(), dt.getMonth() + 1, dt.getDate(), dt.getHours(), dt.getMinutes()] as const;
+}
+
+function nextDay(y: number, m: number, d: number) {
+  const dt = new Date(y, m - 1, d, 0, 0, 0, 0);
+  dt.setDate(dt.getDate() + 1);
+  return [dt.getFullYear(), dt.getMonth() + 1, dt.getDate()] as const;
+}
+
+export async function tasksToICSBuffer(tasks: SimpleTask[]): Promise<Buffer> {
+  const events: EventAttributes[] = tasks.map((t) => {
+    const [yy, mm, dd] = t.date.split('-').map((n) => Number(n)) as [number, number, number];
+
+    if (t.time) {
+      const [h, min] = t.time.split(':').map((n) => Number(n)) as [number, number];
+      const start: [number, number, number, number, number] = [yy, mm, dd, h, min];
+      const end = addHour(yy, mm, dd, h, min);
+
+      const e: EventAttributes = {
+        title: t.title,
+        start,
+        end,
+        startInputType: 'local',
+        description: t.description,
+        location: t.location,
+        url: t.link,
+      };
+      return e;
+    }
+
+    // All-day: DTEND should be exclusive (next day)
+    const start: [number, number, number] = [yy, mm, dd];
+    const end = nextDay(yy, mm, dd);
+
+    const e: EventAttributes = {
       title: t.title,
       start,
-      ...(end ? { end } : {}),
-      startInputType: t.time ? 'local' : 'utc',
-      description: t.notes ?? '',
-      calName: `LawBandit - ${t.classId}`,
+      end,
+      startInputType: 'local',
+      description: t.description,
+      location: t.location,
+      url: t.link,
     };
+    return e;
   });
 
-  return new Promise((resolve, reject) => {
-    createEvents(events, (err, value) => {
-      if (err) return reject(err);
-      resolve(Buffer.from(value));
-    });
-  });
+  // Pass calendar header attributes here (NOT on each event)
+  const { error, value } = createEvents(events, { calName: 'LawBandit Syllabus' });
+  if (error) throw error;
+  // createEvents returns a string; convert to Buffer for download
+  return Buffer.from(value);
 }
