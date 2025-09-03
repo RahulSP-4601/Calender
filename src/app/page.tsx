@@ -4,7 +4,7 @@ import * as React from 'react';
 import CalendarView from '@/components/CalendarView';
 import ListView from '@/components/ListView';
 import Uploader from '@/components/Uploader';
-import ThemeToggle from '@/components/ThemeToggle';
+
 import type { SyllabusTask } from '@/lib/types';
 
 const CLASSES = [
@@ -61,7 +61,7 @@ export default function Home() {
             <span className="text-white/90">Syllabus → Calendar</span>
           </h1>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
+            
             <button
               disabled={!tasks.length}
               onClick={downloadICS}
