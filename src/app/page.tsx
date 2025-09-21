@@ -131,9 +131,9 @@ export default function Home() {
       <header className="sticky top-0 z-10 backdrop-blur supports-backdrop-blur:bg-white/5 bg-black/30 border-b border-white/10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">
-            <span className="text-white">LawBandit</span>
-            <span className="mx-2 text-white/50">—</span>
-            <span className="text-white/90">Syllabus → Calendar</span>
+            <span className="text-white">SMART SYLLABUS</span>
+            <span className="mx-2 text-white/50">-</span>
+            <span className="text-white/90">CALENDAR INTEGRATION</span>
           </h1>
 
           <div className="flex items-center gap-2">
